@@ -1,2 +1,2 @@
 # Terraform
-This includes code for infrastructure
+This includes Terraform code which cantains different AWS resources.
