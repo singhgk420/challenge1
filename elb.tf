@@ -4,6 +4,7 @@ resource "aws_lb" "Test-lb1" {
   load_balancer_type = "application"
   subnets            = [aws_subnet.subnet1.id, aws_subnet.subnet2.id]
   enable_deletion_protection = false
+  security_groups = [aws_security_group.internet_lb_sg.id]
 
 
 }
@@ -22,7 +23,6 @@ resource "aws_lb" "Test-lb2" {
   load_balancer_type = "application"
   subnets            =[aws_subnet.subnet3.id, aws_subnet.subnet4.id]
   enable_deletion_protection = false
-
 
 }
 resource "aws_lb_listener" "back_end" {

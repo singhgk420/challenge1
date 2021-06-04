@@ -59,16 +59,10 @@ resource "aws_subnet" "subnet4" {
 ##creation of two route table one for public subnet and other for private subnet
 resource "aws_route_table" "Routetable1" {
   vpc_id = aws_vpc.Test-vpc.id
-
- # route {
-  # cidr_block = "10.0.1.0/16"
-   # gateway_id = aws_internet_gateway.Test-IG.id
-  #}
-
- #route {
-  # ipv6_cidr_block        = "::/0"
-  #egress_only_gateway_id = aws_egress_only_internet_gateway.T.id
-  #}
+  route {
+  cidr_block  ="10.0.1.0/16"
+  gateway_id  = aws_internet_gateway.Test-IG.id
+  }
 
   tags = {
     Name = "Demo-public-RT"
@@ -77,15 +71,10 @@ resource "aws_route_table" "Routetable1" {
 resource "aws_route_table" "Routetable2" {
   vpc_id = aws_vpc.Test-vpc.id
 
- #route {
- # cidr_block = "10.0.1.0/24"
-  #gateway_id = aws_internet_gateway..id
-  #}
-
-  #route {
-   # ipv6_cidr_block        = "::/0"
-   #egress_only_gateway_id = aws_nat_gateway.gw.id
-#}
+ route {
+ cidr_block = "10.0.0.0/8"
+  gateway_id = aws_nat_gateway.gw.id
+  }
 
   tags = {
     Name = "Demo-private-RT"
@@ -110,6 +99,7 @@ resource "aws_nat_gateway" "gw" {
     Name = "gw NAT"
   }
 }
+##elastic ip creation for allocation id
 resource "aws_eip" "lb" {
   vpc      = true
 }
