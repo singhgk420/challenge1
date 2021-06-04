@@ -1,26 +1,57 @@
-resource "aws_elb" "Test-elb" {
-  name               = "Demo-elb"
-  availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
+resource "aws_lb" "Test-lb1" {
+  name               = "internet-facing"
+  internal           = false
+  load_balancer_type = "application"
+  subnets            = [aws_subnet.subnet1.id, aws_subnet.subnet2.id]
+  enable_deletion_protection = false
 
 
-  listener {
-    instance_port     = 8000
-    instance_protocol = "http"
-    lb_port           = 80
-    lb_protocol       = "http"
+}
+resource "aws_lb_listener" "front_end" {
+  load_balancer_arn = aws_lb.Test-lb1.arn
+  port = "80"
+  protocol = "HTTP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.frontend_tg.arn
   }
+}
+resource "aws_lb" "Test-lb2" {
+  name               = "internal"
+  internal           = true
+  load_balancer_type = "application"
+  subnets            =[aws_subnet.subnet3.id, aws_subnet.subnet4.id]
+  enable_deletion_protection = false
 
 
-  health_check {
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    timeout             = 3
-    target              = "HTTP:8000/"
-    interval            = 30
+}
+resource "aws_lb_listener" "back_end" {
+  load_balancer_arn = aws_lb.Test-lb2.arn
+  port = "80"
+  protocol = "HTTP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.backend_tg.arn
   }
+}
+resource "aws_lb_target_group" "frontend_tg" {
+  name     = "frontend-lb-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.Test-vpc.id
+}
+resource "aws_autoscaling_attachment" "asg_attachment1" {
+  autoscaling_group_name = aws_autoscaling_group.frontend-asg.id
+  alb_target_group_arn   = aws_lb_target_group.frontend_tg.arn
+}
 
-
-  tags = {
-    Name = "Demo-elb"
-  }
+resource "aws_lb_target_group" "backend_tg" {
+  name     = "backend-lb-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.Test-vpc.id
+}
+resource "aws_autoscaling_attachment" "asg_attachment2" {
+  autoscaling_group_name = aws_autoscaling_group.backend-asg.id
+  alb_target_group_arn   = aws_lb_target_group.backend_tg.arn
 }
